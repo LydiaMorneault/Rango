@@ -21,6 +21,6 @@ from django.conf.urls import include
 urlpatterns = [
     # maps any URLs starting with rango/ to be handled by the rango app
     url(r'^$', views.index, name='index'),
-
+    url(r'^rango/', include('rango.urls')),
     url(r'^admin/', admin.site.urls),
 ]
