@@ -1,10 +1,10 @@
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tango_with_django_project.settings')
-
 import django
 django.setup()
 from rango.models import Category, Page
 
+# Keeps tabs on the categories that are created
 def populate():
 	# Lists of dictionaries w/ pages we want to add in each category
 	python_pages = [
@@ -22,13 +22,13 @@ def populate():
 	{"title":"Flask", "url":"http://flask.pocoo.org", "views":"32", "likes":"32"}]
 	
 	# A dictionary of dictionaries
-	cats = {"Python": {"pages": python_pages},
-			"Django": {"pages": django_pages},
-			"Other Frameworks": {"pages": other_pages}}
+	cats = {"Python": {{"pages": python_pages}, {"views": 128}, {"likes": 64}},
+			"Django": {{"pages": django_pages}, {"views": 64}, {"likes": 32}},
+			"Other Frameworks": {{"pages": other_pages}, {"views": 32}, {"likes": 16}}}
 			
 	# Goes through cats dictionary, adds category, adds all associated pages for that category
 	for cat, cat_data in cats.items():
-		c = add_cat(cat)
+		c = add_cat(cat, cat[1][1][1], cat[1][2][1])
 		for p in cat_data["pages"]:
 			add_page(c, p["title"], p["url"])
 			
@@ -38,14 +38,20 @@ def populate():
 			print("- {0} - {1}".format(str(c), str(p)))
 			
 def add_page(cat, title, url, views=0, likes=0):
-	p = Page.objects.get_or_create(category=cat, title=title)[0]
+	# get_or_create creates model instances in the population script
+	# also checks whether or not the model already exists
+	# returns tuple of (<reference to model instance>, <Boolean, with True if it created>)
+	p = Page.objects.get_or_create(category=cat, title=title)[0]	# [0] refers to just the model reference
 	p.url=url
 	p.views=views
 	p.save()
 	return p
-	
-def add_cat(name):
+
+# Creates new category
+def add_cat(name, views, likes):
 	c = Category.objects.get_or_create(name=name)[0]
+	c.views = views
+	c.likes = likes
 	c.save()
 	return c
 	
