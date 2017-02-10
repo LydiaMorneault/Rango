@@ -4,12 +4,8 @@ from rango.models import Category, Page
 from django.shortcuts import render
 from django.shortcuts import redirect
 from datetime import datetime
+from rango.forms import CategoryForm, PageForm
 
-
-
-# This is one view called index
-# Each view takes in an HttpRequest parameter
-# All views return an HttpResponse object, which takes in a string which will be displayed
 def index(request):
     # Query the database for a list of all categories stored
     # Order by number of likes in descending order
@@ -27,7 +23,6 @@ def index(request):
     # Note that the first parameter is the template we wish to use
     return render(request, 'rango/index.html', context=context_dict)
 
-
 def about(request):
     # Construct a dictionary to pass to the template engine as its context
     # The key boldmessage is the same as in the template
@@ -37,6 +32,10 @@ def about(request):
     # We make use of the shortcut function to make our lives easier
     # Note that the first parameter is the template we wish to use
     return render(request, 'rango/about.html', context=context_dict)
+
+# This is one view called index
+# Each view takes in an HttpRequest parameter
+# All views return an HttpResponse object, which takes in a string which will be displayed
 
 def show_category(request, category_name_slug):
     context_dict = {}
@@ -62,6 +61,45 @@ def show_category(request, category_name_slug):
         context_dict['pages'] = None
 
     return render(request, 'rango/category.html', context_dict)
+
+def add_category(request):
+    form = CategoryForm(request.POST)
+
+    if form.is_valid():
+        form.save(commit=True)
+        return index(request)   #Redirects to index page
+
+    else:
+        print(form.errors)
+
+    # Renders form with every type of error msg or w/e, displays errors
+    return render(request, 'rango/add_category.html', {'form': form})
+
+def add_page(request, category_name_slug):
+    try:
+        category = Category.objects.get(slug=category_name_slug)
+    except Category.DoesNotExist:
+        category = None
+
+    form = PageForm()
+    if request.method == 'POST':
+        form = PageForm(request.POST)
+        if form.is_valid():
+            if category:
+                page=form.save(commit=False)
+                page.category = category
+                page.views = 0
+                page.save()
+                return show_category(request, category_name_slug)
+        else:
+            print(form.errors)
+
+    context_dict = {'form':form, 'category':category}
+    return render(request, 'rango/add_page.html', context_dict)
+
+
+
+
 
 
 
