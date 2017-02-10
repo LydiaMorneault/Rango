@@ -3,7 +3,7 @@ from rango import views
 
 
 # imports Django machinery for URL mappings and views module from rango
-
+# app_name = 'rango'
 urlpatterns = [
     url(r'^$', views.index, name = 'index'),
     url(r'^about/', views.about, name = 'about'),
