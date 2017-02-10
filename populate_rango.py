@@ -1,7 +1,9 @@
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tango_with_django_project.settings')
+
 import django
 django.setup()
+
 from rango.models import Category, Page
 
 # Keeps tabs on the categories that are created
@@ -22,22 +24,22 @@ def populate():
 	{"title":"Flask", "url":"http://flask.pocoo.org", "views":"32", "likes":"32"}]
 	
 	# A dictionary of dictionaries
-	cats = {"Python": {{"pages": python_pages}, {"views": 128}, {"likes": 64}},
-			"Django": {{"pages": django_pages}, {"views": 64}, {"likes": 32}},
-			"Other Frameworks": {{"pages": other_pages}, {"views": 32}, {"likes": 16}}}
+	cats = {"Python": {"pages": python_pages, "views": 128, "likes": 64},
+			"Django": {"pages": django_pages, "views": 64, "likes": 32},
+			"Other Frameworks":{"pages": other_pages, "views": 32, "likes": 16}}
 			
 	# Goes through cats dictionary, adds category, adds all associated pages for that category
 	for cat, cat_data in cats.items():
-		c = add_cat(cat, cat[1][1][1], cat[1][2][1])
+		c = add_cat(cat, cat_data["views"], cat_data["likes"])
 		for p in cat_data["pages"]:
-			add_page(c, p["title"], p["url"])
+			add_page(c, p["title"], p["url"], p["views"])
 			
 	# Print out categories we've added
 	for c in Category.objects.all():
 		for p in Page.objects.filter(category=c):
 			print("- {0} - {1}".format(str(c), str(p)))
 			
-def add_page(cat, title, url, views=0, likes=0):
+def add_page(cat, title, url, views=0):
 	# get_or_create creates model instances in the population script
 	# also checks whether or not the model already exists
 	# returns tuple of (<reference to model instance>, <Boolean, with True if it created>)
@@ -48,7 +50,7 @@ def add_page(cat, title, url, views=0, likes=0):
 	return p
 
 # Creates new category
-def add_cat(name, views, likes):
+def add_cat(name, views=0, likes=0):
 	c = Category.objects.get_or_create(name=name)[0]
 	c.views = views
 	c.likes = likes
