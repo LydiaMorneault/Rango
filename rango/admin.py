@@ -1,5 +1,6 @@
 from django.contrib import admin
-from rango.models import Category, Page, Question
+from rango.models import Category, Page
+from rango.models import UserProfile
 
 class QuestionAdmin(admin.ModelAdmin):
     fields = ['pub_date', 'question_text']
@@ -12,8 +13,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug':('name',)}
 
 # Update registration to include this customised interface
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Question, QuestionAdmin)
 admin.site.register(Page, PageAdmin)
+admin.site.register(UserProfile)
 
 

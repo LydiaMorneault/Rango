@@ -4,7 +4,7 @@ from rango.models import Category, Page
 from django.shortcuts import render
 from django.shortcuts import redirect
 from datetime import datetime
-from rango.forms import CategoryForm, PageForm
+from rango.forms import CategoryForm, PageForm, UserForm, UserProfileForm
 
 def index(request):
     # Query the database for a list of all categories stored
@@ -96,6 +96,43 @@ def add_page(request, category_name_slug):
 
     context_dict = {'form':form, 'category':category}
     return render(request, 'rango/add_page.html', context_dict)
+
+def register(request):
+    # a boolean value for telling the template whether the registration was successful
+    # True when registration succeeds
+    registered = False
+
+    # if it's an HTTP POST we're interested in it
+    if request.method == 'POST':
+        #gets info from raw form
+        user_form = UserForm(data=request.POST)
+        profile_form = UserProfileForm(data=request.POST)
+
+        # if they're both valid
+        if user_form.is_valid() and profile_form.is_valid():
+            #save data to database
+            user = user_form.save()
+
+            #hash password with set password and update
+            user.set_password(user.password)
+            user.save()
+
+            #commit=False because we'll set it ourselves
+            profile = profile_form.save(commit=False)
+            profile.user = user
+
+            #does user have a profile pic?
+            if 'picture' in request.FILES:
+                #get it from input form
+                profile.picture = request.FILES['picture']
+                profile.save()
+                registered = True
+
+            else: #Not an HTTP POST
+                user_form = UserForm()
+                profile_form = UserProfileForm()
+
+        return render(request, 'rango/register.html', {'user_form':user_form,'profile_form':profile_form, 'registered': registered})
 
 
 
